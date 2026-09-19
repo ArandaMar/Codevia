@@ -5,7 +5,11 @@ import {
   Truck,
   ClipboardList,
   BarChart3,
-  ShieldCheck
+  ShieldCheck,
+  HardHat,
+  Cog,
+  Forklift,
+  MonitorCog,
 } from "lucide-react";
 
 export const roleOptions = [
@@ -14,24 +18,28 @@ export const roleOptions = [
     label: "Jefe de Producción",
     initials: "JP",
     note: "Turnos, lotes y calidad",
+    icon: HardHat,
   },
   {
     id: "warehouse",
     label: "Depósito y Expedición",
     initials: "DE",
     note: "Stock, cargas y rutas",
+    icon: Warehouse,
   },
   {
     id: "operator",
     label: "Operario de Extrusión",
     initials: "OE",
     note: "Registro de turno",
+    icon: Cog,
   },
   {
     id: "forklift",
     label: "Clarkista",
     initials: "CL",
     note: "Ubicaciones y carga",
+    icon: Forklift,
   },
   // {
   //   id: "driver",
@@ -44,12 +52,14 @@ export const roleOptions = [
     label: "Administración y Ventas",
     initials: "AV",
     note: "Pedidos y reportes",
+    icon: BarChart3,
   },
   {
     id: "it",
     label: "IT / Sistemas",
     initials: "IT",
-    note: "Usuarios, config y auditoría"
+    note: "Usuarios, config y auditoría",
+    icon: MonitorCog,
   },
 ];
 

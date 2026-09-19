@@ -21,7 +21,7 @@ export default function AppShell({
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f6f7]">
+    <div className="min-h-screen bg-canvas-2">
       <Sidebar
         active={active}
         navigate={handleNavigate}

@@ -7,10 +7,10 @@ import {
   BarChart3,
   Settings,
   X,
-  SparkleIcon,
   AlertTriangle,
   LogOut,
 } from "lucide-react";
+import BrandMark from "@/components/common/BrandMark";
 
 const navItems = [
   {
@@ -57,7 +57,6 @@ export default function Sidebar({
 }) {
   return (
     <>
-      {/* Overlay mobile */}
       {mobileOpen && (
         <div
           className="fixed inset-0 z-10 bg-black/20 lg:hidden"
@@ -66,42 +65,23 @@ export default function Sidebar({
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-20 flex w-62 flex-col border-r border-[#dbe3e6] bg-white px-3.75 pb-4 pt-6.25 transition-transform duration-200 lg:translate-x-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed inset-y-0 left-0 z-20 flex w-62 flex-col border-r border-line bg-white px-3.75 pb-4 pt-6.25 transition-transform duration-200 lg:translate-x-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full"
           }`}
       >
-        {/* Brand */}
-        <div className="relative flex items-center gap-2.5 px-2.5 pb-6.25">
-          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft">
-            <SparkleIcon className="h-6 w-6 object-contain" />
-            {/* <img
-              src=""
-              alt=""
-              className="h-6 w-6 object-contain"
-            /> */}
-          </div>
+        <div className="relative flex items-center px-1 pb-6">
+          <BrandMark compact />
 
-          <div>
-            <strong className="block font-barlow text-[22px] leading-4.5 tracking-[-0.3px] text-[#153d4c]">
-              brother<span className="text-amber">plast</span>
-            </strong>
-
-            <small className="mt-0.75 block text-[8px] uppercase tracking-[0.12em] text-[#84939a]">
-              gestión industrial
-            </small>
-          </div>
-
-          {/* Cerrar sidebar en mobile */}
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
-            className="absolute right-0 top-0 grid h-7 w-7 place-items-center rounded-md border-0 bg-transparent text-[#71828a] lg:hidden"
+            className="absolute right-0 top-0 grid h-7 w-7 place-items-center rounded-md border-0 bg-transparent text-ink-soft lg:hidden"
             aria-label="Cerrar menú"
           >
             <X size={17} />
           </button>
         </div>
-        {/* Navegación */}
-        <nav className="flex flex-col gap-1 pt-4.25">
+
+        <nav className="flex flex-col gap-1 pt-2">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = active === item.id;
@@ -111,9 +91,9 @@ export default function Sidebar({
                 key={item.id}
                 type="button"
                 onClick={() => navigate(item.id)}
-                className={`flex w-full items-center gap-2.75 rounded-[7px] border-0 px-3 py-2.75 text-left text-[15px] transition-all duration-150 cursor-pointer ${isActive
-                  ? "bg-brand-soft font-semibold text-brand shadow-[inset_3px_0_0_#145c73]"
-                  : "bg-transparent text-[#667b83] hover:bg-[#f4f7f8] hover:text-brand"
+                className={`flex w-full items-center gap-2.75 rounded-[14px] border-0 px-3 py-2.75 text-left text-[14px] transition-all duration-150 cursor-pointer ${isActive
+                  ? "bg-brand-soft font-semibold text-brand"
+                  : "bg-transparent text-ink-soft hover:bg-canvas hover:text-ink"
                   }`}
               >
                 <Icon size={16} strokeWidth={1.8} />
@@ -121,7 +101,7 @@ export default function Sidebar({
                 <span className="flex-1">{item.label}</span>
 
                 {item.badge && (
-                  <em className="rounded-full bg-[#fff0d7] px-1.5 py-0.5 text-[10px] font-semibold not-italic text-[#b87318]">
+                  <em className="rounded-full bg-brand-soft px-1.5 py-0.5 text-[10px] font-semibold not-italic text-brand">
                     {item.badge}
                   </em>
                 )}
@@ -130,53 +110,48 @@ export default function Sidebar({
           })}
         </nav>
 
-        {/* Parte inferior */}
         <div className="mt-auto">
-          {/* Alerta */}
           <button
             type="button"
             onClick={() => fakeAction?.("Hay 3 excepciones que requieren atención")}
-            className="flex w-full cursor-pointer items-center gap-2.25 rounded-[7px] border border-[#f6e2bc] bg-[#fff7e9] px-2.5 py-2.75 text-left"
+            className="flex w-full cursor-pointer items-center gap-2.25 rounded-[14px] border border-brand-soft bg-brand-softer px-2.5 py-2.75 text-left"
           >
             <AlertTriangle
               size={16}
-              className="shrink-0 text-[#b5741c]"
+              className="shrink-0 text-brand"
             />
 
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <strong className="text-[11px] text-[#8a5812]">
+              <strong className="text-[11px] text-brand">
                 3 alertas críticas
               </strong>
 
-              <span className="text-[10px] text-[#b89054]">
+              <span className="text-[10px] text-ink-soft">
                 Requieren atención hoy
               </span>
             </div>
           </button>
 
-          {/* Configuración */}
           <button
             type="button"
             onClick={() => navigate("settings")}
-            className="mt-2 flex w-full items-center gap-2.75 rounded-[7px] border-0 bg-transparent px-3 py-2.75 text-left text-[11px] text-[#667b83] hover:bg-[#f4f7f8] hover:text-brand"
+            className="mt-2 flex w-full cursor-pointer items-center gap-2.75 rounded-[14px] border-0 bg-transparent px-3 py-2.75 text-left text-[11px] text-ink-soft hover:bg-canvas hover:text-brand"
           >
             <Settings size={16} strokeWidth={1.8} />
-
             <span>Configuración</span>
           </button>
 
-          {/* Usuario */}
-          <div className="mt-3.75 flex items-center gap-2.25 border-t border-[#e4eaec] px-2 pt-3.75">
-            <div className="grid h-7.75 w-7.75 shrink-0 place-items-center rounded-full bg-brand font-barlow text-[12px] font-bold text-white">
+          <div className="mt-3.75 flex items-center gap-2.25 border-t border-line px-2 pt-3.75">
+            <div className="grid h-7.75 w-7.75 shrink-0 place-items-center rounded-full bg-brand text-[12px] font-bold text-white">
               AL
             </div>
 
             <div className="min-w-0 flex-1">
-              <strong className="block overflow-hidden text-ellipsis whitespace-nowrap text-[11px] text-[#35535d]">
+              <strong className="block overflow-hidden text-ellipsis whitespace-nowrap text-[11px] text-ink">
                 Andrés Liporace
               </strong>
 
-              <span className="mt-0.5 block overflow-hidden text-ellipsis whitespace-nowrap text-[9px] text-[#8b9ba0]">
+              <span className="mt-0.5 block overflow-hidden text-ellipsis whitespace-nowrap text-[9px] text-mid">
                 {role?.label || "Administrador"}
               </span>
             </div>
@@ -184,7 +159,7 @@ export default function Sidebar({
             <button
               type="button"
               onClick={() => setLogged?.(false)}
-              className="border-0 bg-transparent p-1 text-[#91a0a5] hover:text-brand"
+              className="border-0 bg-transparent p-1 text-mid hover:text-brand"
               aria-label="Cerrar sesión"
             >
               <LogOut size={14} />

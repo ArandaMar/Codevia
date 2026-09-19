@@ -1,16 +1,15 @@
 export default function Badge({ children, tone = "slate" }) {
   const tones = {
-    blue: "bg-[#e9f2f5] text-[#145c73]",
-    green: "bg-[#e7f4ed] text-[#328160]",
-    amber: "bg-[#fff2d8] text-[#a76e1a]",
-    red: "bg-[#fbe9e7] text-[#ba584d]",
-    slate: "bg-[#edf1f2] text-[#6f8087]",
+    blue: "bg-brand-softer text-brand",
+    green: "bg-green-soft text-green",
+    amber: "bg-brand-soft text-brand",
+    red: "bg-brand-soft text-brand",
+    slate: "bg-canvas text-ink-soft",
   };
 
   return (
     <span
-      className={`inline-flex items-center gap-[5px] whitespace-nowrap rounded-full px-[7px] py-[5px] text-[9px] font-bold ${tones[tone] ?? tones.slate
-        }`}
+      className={`inline-flex items-center gap-[5px] whitespace-nowrap rounded-full px-[7px] py-[5px] text-[9px] font-bold ${tones[tone] ?? tones.slate}`}
     >
       <span className="h-[5px] w-[5px] rounded-full bg-current" />
       {children}

@@ -4,14 +4,14 @@ export default function RouteStep({ label, detail, done, current }) {
   return (
     <div className="relative flex gap-3.25 pb-5.5 last:pb-0">
       <div
-        className={`z-1 grid h-4.25 w-4.25 place-items-center rounded-full ${done ? "bg-green-soft text-green" : current ? "bg-brand-soft text-brand shadow-[0_0_0_4px_#f1f7f8]" : "bg-slate-soft text-[#9aabb0]"
+        className={`z-1 grid h-4.25 w-4.25 place-items-center rounded-full ${done ? "bg-green-soft text-green" : current ? "bg-brand-soft text-brand shadow-[0_0_0_4px_#fff1f2]" : "bg-canvas text-mid"
           }`}
       >
         {done ? <CheckCircle2 size={15} /> : current ? <Truck size={14} /> : <span />}
       </div>
       <div>
-        <strong className="block text-[11px] text-[#48636c]">{label}</strong>
-        <span className="mt-1 block text-[9px] text-[#96a4a8]">{detail}</span>
+        <strong className="block text-[11px] text-ink">{label}</strong>
+        <span className="mt-1 block text-[9px] text-mid">{detail}</span>
       </div>
     </div>
   );
