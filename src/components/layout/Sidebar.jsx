@@ -193,7 +193,7 @@ export default function Sidebar({
 
             <div className="min-w-0 flex-1">
               <strong className="block overflow-hidden text-ellipsis whitespace-nowrap text-[11px] text-ink">
-                Andrés Liporace
+                 María Fernanda Aranda
               </strong>
 
               <span className="mt-0.5 block overflow-hidden text-ellipsis whitespace-nowrap text-[9px] text-mid">
