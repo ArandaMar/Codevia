@@ -139,7 +139,7 @@ export const stockRows = [
     "Sector C · Armario 02",
     "180 kg",
     "30 nov 2026",
-    "Atención",
+    "Bajo",
   ],
 ];
 
@@ -213,13 +213,25 @@ export const clients = [
   {
     id: "CLI-001",
     name: "Plásticos del Sur",
+    cuit: "30-71234567-8",
+    address: "Av. Industrial 1240, Buenos Aires",
+    phone: "011 4444-1200",
+    email: "compras@plasticosdelsur.com",
   },
   {
     id: "CLI-002",
     name: "Mayorista Centro",
+    cuit: "30-70987654-3",
+    address: "Ruta 8 km 42, Pilar",
+    phone: "011 4555-2380",
+    email: "pedidos@mayoristacentro.com",
   },
   {
     id: "CLI-003",
     name: "Distribuidora Norte",
+    cuit: "30-70123456-7",
+    address: "Av. Belgrano 890, Rosario",
+    phone: "0341 425-7788",
+    email: "logistica@distribuidoranorte.com",
   },
 ];

@@ -2,18 +2,37 @@ import { useState } from "react";
 import { ArrowUpRight, Plus, RefreshCw, Route } from "lucide-react";
 import SectionTitle from "@/components/common/SectionTitle";
 import Table from "@/components/common/Table";
-import Badge from "@/components/common/Badge";
 import ActionButton from "@/components/common/ActionButton";
 import RouteStep from "./RouteStep";
 import { dispatchRows } from "@/data/mockData";
 import CreateRouteSheetModal from "./modals/CreateRouteSheetModal";
 
-export default function Dispatch({ fakeAction }) {
+export default function Dispatch({ fakeAction, clients, incomingMaterials = [], onSendToHistory }) {
   const [routeModalOpen, setRouteModalOpen] = useState(false);
+  const [selectedRoutes, setSelectedRoutes] = useState([]);
+  const [routes, setRoutes] = useState(dispatchRows);
+  const routeRows = routes.map((row, index) => ["", ...row, index]);
+  const routeStatuses = ["Cargando", "En playa", "Despachado", "Entregado"];
+
+  const sendDeliveredToHistory = () => {
+    const delivered = routes.filter((route, index) => selectedRoutes.includes(index) && route[5] === "Entregado");
+    onSendToHistory?.(delivered);
+    setRoutes((current) => current.filter((route, index) => !(selectedRoutes.includes(index) && route[5] === "Entregado")));
+    setSelectedRoutes([]);
+    if (delivered.length) fakeAction?.(`${delivered.length} entrega${delivered.length === 1 ? "" : "s"} enviada${delivered.length === 1 ? "" : "s"} al historial`);
+  };
 
   const handleCreateRouteSheet = (routeSheet) => {
-    console.log("Nueva hoja de ruta:", routeSheet);
-
+    const clientName = clients.find((client) => client.id === routeSheet.idCliente)?.name || routeSheet.idCliente;
+    const newRoute = [
+      routeSheet.numero,
+      clientName,
+      routeSheet.idCamion,
+      routeSheet.idChofer,
+      routeSheet.estadoPicking,
+      "En playa",
+    ];
+    setRoutes((current) => [newRoute, ...current]);
     fakeAction?.(`${routeSheet.numero} creada correctamente`);
   };
   return (
@@ -49,12 +68,12 @@ export default function Dispatch({ fakeAction }) {
         <div className="rounded-lg border border-[#e1e8ea] bg-white p-5 shadow-card">
           <div className="mb-4.5 flex items-start justify-between gap-3">
             <div><div className="mb-2 text-[9px] font-bold uppercase tracking-[0.16em] text-[#82979e]">SEGUIMIENTO DE CARGAS</div><h3 className="m-0 font-barlow text-[21px] text-[#214451]">Camiones en operación</h3></div>
-            <ActionButton variant="secondary" onClick={() => fakeAction("Tablero actualizado")}><RefreshCw size={15} /> Actualizar</ActionButton>
+            <div className="flex flex-wrap justify-end gap-2"><ActionButton variant="secondary" onClick={() => fakeAction("Tablero actualizado")}><RefreshCw size={15} /> Actualizar</ActionButton><ActionButton onClick={sendDeliveredToHistory} disabled={!selectedRoutes.length}>Enviar a Historial de Entregas Finalizadas{selectedRoutes.length ? ` (${selectedRoutes.length})` : ""}</ActionButton></div>
           </div>
           <Table
-            headers={["Hoja", "Cliente", "Camión", "Chofer", "Picking", "Estado"]}
-            rows={dispatchRows}
-            renderCell={(cell, j) => (j === 5 ? <Badge tone={cell === "Despachado" ? "green" : cell === "Cargando" ? "blue" : "amber"}>{cell}</Badge> : cell)}
+            headers={["", "Hoja", "Cliente", "Camión", "Chofer", "Picking", "Estado"]}
+            rows={routeRows}
+            renderCell={(cell, j, row) => j === 0 ? <input type="checkbox" checked={selectedRoutes.includes(row[6])} disabled={row[6] !== undefined && routes[row[6]][5] !== "Entregado"} onChange={() => setSelectedRoutes((current) => current.includes(row[6]) ? current.filter((id) => id !== row[6]) : [...current, row[6]])} aria-label={`Seleccionar ${row[1]}`} className="h-4 w-4 accent-brand disabled:opacity-40" /> : j === 6 ? <select value={cell} onChange={(event) => setRoutes((current) => current.map((route, index) => index === row[6] ? [...route.slice(0, 5), event.target.value] : route))} className={`rounded-full border-0 px-2 py-1 text-[9px] font-bold outline-none ${cell === "Entregado" ? "bg-green-soft text-green" : cell === "Despachado" ? "bg-green-soft text-green" : cell === "Cargando" || cell === "Cargado" ? "bg-blue-50 text-blue-700" : "bg-brand-soft text-brand"}`} aria-label={`Estado de ${row[1]}`}>{routeStatuses.map((status) => <option key={status} value={status}>{status}</option>)}</select> : cell}
           />
         </div>
 
@@ -71,10 +90,12 @@ export default function Dispatch({ fakeAction }) {
           <ActionButton full onClick={() => fakeAction("Hoja de ruta abierta")}>Ver hoja completa <ArrowUpRight size={16} /></ActionButton>
         </div>
       </div>
+      {incomingMaterials.length > 0 && <div className="mt-3.5 rounded-lg border border-[#e1e8ea] bg-white p-5 shadow-card"><div className="mb-4.5"><div className="mb-2 text-[9px] font-bold uppercase tracking-[0.16em] text-[#82979e]">PEDIDOS RECIBIDOS</div><h3 className="m-0 font-barlow text-[21px] text-[#214451]">Preparación para expedición</h3></div><Table headers={["Pedido", "Cliente", "Producto", "Volumen"]} rows={incomingMaterials.map((record) => record.values ? [record.values[0], record.values[1], record.values[2], record.values[3]] : [record.numero, record.cliente, record.producto, record.volumen])} /></div>}
       <CreateRouteSheetModal
         open={routeModalOpen}
         onOpenChange={setRouteModalOpen}
         onCreate={handleCreateRouteSheet}
+        clients={clients}
       />
     </>
   );

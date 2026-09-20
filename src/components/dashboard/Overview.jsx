@@ -101,13 +101,13 @@ export default function Overview({ navigate, fakeAction }) {
           <button className="flex items-center gap-1.5 text-[11px] font-bold text-brand" onClick={() => navigate("orders")}>Ver todos <ArrowUpRight size={15} /></button>
         </div>
         <Table
-          headers={["Pedido", "Cliente", "Entrega", "Bultos", "Estado"]}
+          headers={["", "Pedido", "Cliente", "Entrega", "Bultos", "Estado"]}
           rows={[
-            ["PED-10492", "Plásticos del Sur", "Hoy · 14:00", "18", "Listo para picking"],
-            ["PED-10488", "Mayorista Centro", "Hoy · 16:30", "42", "En preparación"],
-            ["PED-10476", "Distribuidora Norte", "Mañana · 08:00", "26", "Confirmado"],
+            ["", "PED-10492", "Plásticos del Sur", "Hoy · 14:00", "18", "Listo para picking"],
+            ["", "PED-10488", "Mayorista Centro", "Hoy · 16:30", "42", "En preparación"],
+            ["", "PED-10476", "Distribuidora Norte", "Mañana · 08:00", "26", "Confirmado"],
           ]}
-          renderCell={(cell, j) => (j === 4 ? <Badge tone={cell === "Listo para picking" ? "green" : cell === "En preparación" ? "amber" : "blue"}>{cell}</Badge> : cell)}
+          renderCell={(cell, j, row) => (j === 0 ? <input type="checkbox" aria-label={`Seleccionar ${row[1]}`} className="h-4 w-4 accent-brand" /> : j === 5 ? <Badge tone={cell === "Listo para picking" ? "green" : cell === "En preparación" ? "amber" : "blue"}>{cell}</Badge> : cell)}
         />
       </div>
     </>

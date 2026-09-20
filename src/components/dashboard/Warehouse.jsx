@@ -1,4 +1,4 @@
-import { AlertTriangle, Clock3, MapPin, Plus } from "lucide-react";
+import { AlertTriangle, Clock3, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
 import SectionTitle from "@/components/common/SectionTitle";
 import Table from "@/components/common/Table";
 import Badge from "@/components/common/Badge";
@@ -7,14 +7,72 @@ import ActionButton from "@/components/common/ActionButton";
 import { stockRows } from "@/data/mockData";
 import { useState } from "react";
 import CreateMovModal from "./modals/CreateMovModal";
+import ConfirmDialog from "@/components/common/ConfirmDialog";
 
-export default function Warehouse({ fakeAction }) {
+const pickingStatuses = ["Pendiente de armado", "En armado de entrega", "Listo para picking"];
+
+export default function Warehouse({ fakeAction, incomingOrders = [], onSendToDispatch }) {
   const [movModalOpen, setMovModalOpen] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [confirmation, setConfirmation] = useState(null);
+  const [rows, setRows] = useState(() => stockRows.map((values, index) => ({ id: `initial-${index}`, values })));
+  const [selectedMaterials, setSelectedMaterials] = useState([]);
+  const [selectedPickingOrders, setSelectedPickingOrders] = useState([]);
+  const [pickingStates, setPickingStates] = useState({});
 
-  const handleMovModal = (movModal) => {
-    console.log("Nueva hoja de ruta:", movModal);
+  const handleMovModal = (movement) => {
+    const values = [
+      editing?.values[0] || `MP-${Date.now().toString().slice(-6)}`,
+      movement.material,
+      movement.ubicacion,
+      `${movement.volumen} ${movement.unidad}`,
+      movement.fecha,
+      movement.nivel,
+    ];
+    if (editing) {
+      setConfirmation({ action: "save", record: editing, values });
+    } else {
+      setRows((current) => [{ id: `stock-${Date.now()}`, values }, ...current]);
+      fakeAction?.(`${values[0]} dado de alta correctamente`);
+    }
+  };
 
-    fakeAction?.(`${movModal.numero} creada correctamente`);
+  const editMovement = (record) => {
+    const [, material, ubicacion, stock, fecha, nivel] = record.values;
+    const [volumen, unidad] = stock.split(" ");
+    setEditing({
+      ...record,
+      form: { material, ubicacion, volumen: volumen.replace(".", ""), unidad, nivel, fecha: fecha === "—" ? "" : fecha },
+    });
+    setMovModalOpen(true);
+  };
+
+  const deleteMovement = (record) => setConfirmation({ action: "delete", record });
+  const confirmChange = () => {
+    if (confirmation.action === "delete") {
+      setRows((current) => current.filter((item) => item.id !== confirmation.record.id));
+      fakeAction?.(`${confirmation.record.values[0]} dado de baja correctamente`);
+    } else {
+      setRows((current) => current.map((item) => item.id === confirmation.record.id ? { ...item, values: confirmation.values } : item));
+      fakeAction?.(`${confirmation.values[0]} modificado correctamente`);
+    }
+    setConfirmation(null);
+    setEditing(null);
+  };
+
+  const tableRows = rows.map((record) => [...record.values, record]);
+  const getInventoryState = (record) => pickingStates[record.id] || "Pendiente de armado";
+  const toggleMaterial = (record) => {
+    if (getInventoryState(record) !== "Listo para picking") return;
+    setSelectedMaterials((current) => current.includes(record.id) ? current.filter((id) => id !== record.id) : [...current, record.id]);
+  };
+  const getPickingState = (order) => pickingStates[order.numero] || "Pendiente de armado";
+  const updatePickingState = (order, estado) => setPickingStates((current) => ({ ...current, [order.numero]: estado }));
+  const sendPickingToDispatch = () => {
+    const selected = rows.filter((record) => selectedMaterials.includes(record.id) && getInventoryState(record) === "Listo para picking");
+    onSendToDispatch?.(selected);
+    setSelectedPickingOrders([]);
+    if (selected.length) fakeAction?.(`${selected.length} pedido${selected.length === 1 ? "" : "s"} enviado${selected.length === 1 ? "" : "s"} a expedición`);
   };
   return (
     <>
@@ -52,16 +110,23 @@ export default function Warehouse({ fakeAction }) {
       <div className="rounded-lg border border-[#e1e8ea] bg-white p-5 shadow-card">
         <div className="mb-4.5 flex items-start justify-between gap-3">
           <div><div className="mb-2 text-[9px] font-bold uppercase tracking-[0.16em] text-[#82979e]">UBICACIONES Y ALERTAS</div><h3 className="m-0 font-barlow text-[21px] text-[#214451]">Inventario crítico</h3></div>
-          <ActionButton variant="secondary"><MapPin size={15} /> Mapa de sectores</ActionButton>
+          <div className="flex flex-wrap justify-end gap-2"><ActionButton variant="secondary"><MapPin size={15} /> Mapa de sectores</ActionButton><ActionButton onClick={sendPickingToDispatch} disabled={!selectedMaterials.length}>Enviar a expedición{selectedMaterials.length ? ` (${selectedMaterials.length})` : ""}</ActionButton></div>
         </div>
         <Table
-          headers={["Código", "Material", "Ubicación física", "Stock", "Vencimiento", "Nivel"]}
-          rows={stockRows}
-          renderCell={(cell, j) =>
-            j === 5 ? <Badge tone={cell === "Crítico" ? "red" : cell === "Atención" ? "amber" : "green"}>{cell}</Badge> :
-              j === 4 && cell !== "—" ? <span className={cell === "12 sep 2026" ? "font-bold text-red" : ""}>{cell}</span> : cell
+          headers={["", "Código", "Material", "Ubicación física", "Stock", "Vencimiento", "Estado", "Acciones"]}
+          rows={tableRows.map((row) => ["", ...row])}
+          renderCell={(cell, j, row) =>
+            j === 0 ? <input type="checkbox" checked={selectedMaterials.includes(row[7].id)} disabled={getInventoryState(row[7]) !== "Listo para picking"} onChange={() => toggleMaterial(row[7])} aria-label={`Seleccionar ${row[1]}`} className="h-4 w-4 accent-brand disabled:opacity-40" /> :
+              j === 6 ? <select value={getInventoryState(row[7])} onChange={(event) => setPickingStates((current) => ({ ...current, [row[7].id]: event.target.value }))} className={`rounded-full border-0 px-2 py-1 text-[9px] font-bold outline-none ${getInventoryState(row[7]) === "Listo para picking" ? "bg-green-soft text-green" : getInventoryState(row[7]) === "En armado de entrega" ? "bg-brand-soft text-brand" : "bg-canvas text-ink-soft"}`} aria-label={`Estado de ${row[1]}`}>{pickingStatuses.map((status) => <option key={status} value={status}>{status}</option>)}</select> :
+                j === 5 && cell !== "—" ? <span className={cell === "12 sep 2026" ? "font-bold text-red" : ""}>{cell}</span> :
+                  j === 7 ? <div className="flex gap-1"><button className="rounded p-1.5 text-brand hover:bg-brand-softer" onClick={() => editMovement(row[7])} aria-label={`Modificar ${row[1]}`}><Pencil size={14} /></button><button className="rounded p-1.5 text-red-600 hover:bg-red-50" onClick={() => deleteMovement(row[7])} aria-label={`Dar de baja ${row[1]}`}><Trash2 size={14} /></button></div> : cell
           }
         />
+      </div>
+
+      <div className="mt-3.5 rounded-lg border border-[#e1e8ea] bg-white p-5 shadow-card">
+        <div className="mb-[18px] flex items-start justify-between gap-3"><div><div className="mb-2 text-[9px] font-bold uppercase tracking-[0.16em] text-[#82979e]">PEDIDOS RECIBIDOS</div><h3 className="m-0 font-barlow text-[21px] text-[#214451]">Preparación en depósito</h3></div><Badge tone="red">{incomingOrders.length} pedidos</Badge></div>
+        {incomingOrders.length ? <Table headers={["", "Pedido", "Cliente", "Producto", "Volumen", "Entrega", "Estado"]} rows={incomingOrders.map((order) => ["", order.numero, order.cliente, order.producto, order.volumen, order.entrega, order])} renderCell={(cell, index, row) => index === 0 ? <input type="checkbox" disabled={getPickingState(row[6]) !== "Listo para picking"} checked={selectedPickingOrders.includes(row[6].numero)} onChange={() => setSelectedPickingOrders((current) => current.includes(row[6].numero) ? current.filter((numero) => numero !== row[6].numero) : [...current, row[6].numero])} aria-label={`Seleccionar ${row[1]}`} className="h-4 w-4 accent-brand disabled:opacity-40" /> : index === 6 ? <select value={getPickingState(cell)} onChange={(event) => updatePickingState(cell, event.target.value)} className={`rounded-full border-0 px-2 py-1 text-[9px] font-bold outline-none ${getPickingState(cell) === "Listo para picking" ? "bg-green-soft text-green" : getPickingState(cell) === "En armado de entrega" ? "bg-brand-soft text-brand" : "bg-canvas text-ink-soft"}`} aria-label={`Estado de ${row[1]}`}>{pickingStatuses.map((status) => <option key={status} value={status}>{status}</option>)}</select> : cell} /> : <p className="m-0 py-5 text-sm text-muted-ink">Los pedidos enviados a Depósito aparecerán aquí.</p>}
       </div>
 
       <div className="mt-3.5 grid grid-cols-[1.25fr_0.75fr] gap-3.5 max-[1100px]:grid-cols-1">
@@ -95,9 +160,11 @@ export default function Warehouse({ fakeAction }) {
       </div>
       <CreateMovModal
         open={movModalOpen}
-        onOpenChange={setMovModalOpen}
+        onOpenChange={(open) => { setMovModalOpen(open); if (!open) setEditing(null); }}
         onCreate={handleMovModal}
+        initialData={editing?.form}
       />
+      <ConfirmDialog open={Boolean(confirmation)} action={confirmation?.action === "delete" ? "delete" : "save"} onOpenChange={(open) => !open && setConfirmation(null)} onConfirm={confirmChange} />
     </>
   );
 }

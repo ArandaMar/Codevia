@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     Dialog,
     DialogContent,
@@ -16,12 +16,15 @@ import { Label } from "@/components/ui/label";
 import {
     Select,
     SelectContent,
+    SelectGroup,
     SelectItem,
+    SelectLabel,
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { productGroups } from "@/data/productOptions";
 
-const clients = [
+const defaultClients = [
     {
         id: "CLI-001",
         name: "Plásticos del Sur",
@@ -59,20 +62,32 @@ export default function CreateOrderModal({
     open,
     onOpenChange,
     onCreate,
+    clients = defaultClients,
+    initialData = null,
 }) {
     const [form, setForm] = useState({
         clientId: "",
+        producto: "",
         volume: "",
         unit: "",
         deliveryDate: "",
     });
+    const editing = Boolean(initialData);
+
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            if (open) setForm(initialData ? { ...initialData } : { clientId: "", producto: "", volume: "", unit: "", deliveryDate: "" });
+        }, 0);
+        return () => window.clearTimeout(timer);
+    }, [open, initialData]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
 
         const newOrder = {
-            numero: "PBP-00001",
+            numero: form.numero || "PBP-00001",
             idCliente: form.clientId,
+            producto: form.producto,
             volumen: Number(form.volume),
             unidad: form.unit,
             fechaEntrega: form.deliveryDate,
@@ -83,6 +98,7 @@ export default function CreateOrderModal({
 
         setForm({
             clientId: "",
+            producto: "",
             volume: "",
             unit: "",
             deliveryDate: "",
@@ -95,8 +111,8 @@ export default function CreateOrderModal({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-125 border border-[#e1e8ea] bg-white p-0 shadow-card">
                 <DialogHeader className="border-b border-slate-soft bg-white px-6 py-5">
-                    <DialogTitle className="font-barlow text-[25px] font-normal text-ink">
-                        Nuevo pedido
+                        <DialogTitle className="font-barlow text-[25px] font-normal text-ink">
+                        {editing ? "Modificar pedido" : "Nuevo pedido"}
                     </DialogTitle>
 
                     <DialogDescription className="text-[12px] text-muted-ink">
@@ -152,6 +168,11 @@ export default function CreateOrderModal({
                                     ))}
                                 </SelectContent>
                             </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-ink">Producto</Label>
+                            <Select value={form.producto} onValueChange={(value) => setForm((prev) => ({ ...prev, producto: value }))} required><SelectTrigger className="h-9 border-[#dfe7e9] bg-white text-[11px] text-ink-soft"><SelectValue placeholder="Seleccionar producto y tamaño" /></SelectTrigger><SelectContent>{productGroups.map((group) => <SelectGroup key={group.label}><SelectLabel className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-brand">{group.label}</SelectLabel>{group.options.map((product) => <SelectItem key={product} value={product} className="text-[11px]">{product}</SelectItem>)}</SelectGroup>)}</SelectContent></Select>
                         </div>
 
                         {/* Volumen + Unidad */}
@@ -253,12 +274,13 @@ export default function CreateOrderModal({
                             className="h-9 bg-green text-[11px] text-white hover:bg-[#328160]"
                             disabled={
                                 !form.clientId ||
+                                !form.producto ||
                                 !form.volume ||
                                 !form.unit ||
                                 !form.deliveryDate
                             }
                         >
-                            Crear pedido
+                            {editing ? "Guardar cambios" : "Crear pedido"}
                         </Button>
                     </DialogFooter>
                 </form>

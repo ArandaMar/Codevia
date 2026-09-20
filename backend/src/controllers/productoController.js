@@ -5,6 +5,7 @@ const obtenerProductos = async (req, res) => {
         const result = await pool.query(`
             SELECT *
             FROM produccion.producto
+            WHERE estado = 'A'
             ORDER BY id_producto
         `);
 
@@ -22,6 +23,7 @@ const obtenerProductos = async (req, res) => {
 const crearProducto = async (req, res) => {
     try {
         const {
+            codigo,
             nombre,
             id_tipo_producto,
             id_material,
@@ -33,6 +35,7 @@ const crearProducto = async (req, res) => {
 
         const result = await pool.query(`
             INSERT INTO produccion.producto (
+                codigo,
                 nombre,
                 id_tipo_producto,
                 id_material,
@@ -52,6 +55,7 @@ const crearProducto = async (req, res) => {
             )
             RETURNING *;
         `, [
+            codigo,
             nombre,
             id_tipo_producto,
             id_material,
@@ -106,6 +110,7 @@ const actualizarProducto = async (req, res) => {
         const { id } = req.params;
 
         const {
+            codigo,
             nombre,
             id_tipo_producto,
             id_material,
@@ -118,23 +123,25 @@ const actualizarProducto = async (req, res) => {
         const result = await pool.query(`
             UPDATE produccion.producto
             SET
-                nombre = $1,
-                id_tipo_producto = $2,
-                id_material = $3,
-                id_unidad_medida = $4,
-                es_biodegradable = $5,
-                estado = $6,
-                usu_mod = $7,
+                codigo = $1,
+                nombre = $2,
+                id_tipo_producto = $3,
+                id_material = $4,
+                id_unidad_medida = $5,
+                es_biodegradable = $6,
+                estado = $7,
+                usu_mod = $8,
                 fec_mod = CURRENT_TIMESTAMP
-            WHERE id_producto = $8
+            WHERE id_producto = $9
             RETURNING *;
         `, [
+            codigo,
             nombre,
             id_tipo_producto,
             id_material,
             id_unidad_medida,
             es_biodegradable,
-            estado,
+            estado || 'A',
             usu_mod,
             id
         ]);
@@ -162,10 +169,11 @@ const eliminarProducto = async (req, res) => {
         const { id } = req.params;
 
         const result = await pool.query(`
-            DELETE FROM produccion.producto
-            WHERE id_producto = $1
+            UPDATE produccion.producto
+            SET estado = 'I', usu_mod = $2, fec_mod = CURRENT_TIMESTAMP
+            WHERE id_producto = $1 AND estado = 'A'
             RETURNING *;
-        `, [id]);
+        `, [id, req.body?.usu_mod || 'BP38636078']);
 
         if (result.rows.length === 0) {
             return res.status(404).json({

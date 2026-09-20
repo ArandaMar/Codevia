@@ -20,21 +20,6 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
-const clients = [
-    {
-        id: "CLI-001",
-        name: "Plásticos del Sur",
-    },
-    {
-        id: "CLI-002",
-        name: "Mayorista Centro",
-    },
-    {
-        id: "CLI-003",
-        name: "Distribuidora Norte",
-    },
-];
-
 const trucks = [
     {
         id: "CAM-12",
@@ -84,6 +69,7 @@ export default function CreateRouteSheetModal({
     open,
     onOpenChange,
     onCreate,
+    clients = [],
 }) {
     const [form, setForm] = useState({
         clientId: "",

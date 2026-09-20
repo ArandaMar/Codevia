@@ -32,10 +32,9 @@ export default function Login({ role, setRole, setLogged }) {
             <img
               src="/brand/login-hero.jpg"
               alt=""
-              className="absolute inset-0 h-full w-full object-cover grayscale"
+              className="absolute inset-0 h-full w-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-l from-white/10 via-transparent to-canvas-2/40" />
-            <div className="pointer-events-none absolute -right-10 -top-16 h-64 w-64 rounded-full border-[14px] border-brand" />
+            <div className="pointer-events-none absolute -right-10 -top-16 h-64 w-64 rounded-full border-[14px] border-brand/55 mix-blend-multiply" />
             <div className="pointer-events-none absolute -bottom-20 -right-8 h-52 w-52 rounded-full border-[10px] border-ink" />
           </div>
         </section>

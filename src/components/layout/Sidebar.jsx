@@ -4,12 +4,15 @@ import {
   Package,
   Truck,
   ClipboardList,
+  UsersRound,
   BarChart3,
+  History,
   Settings,
   X,
   AlertTriangle,
   LogOut,
 } from "lucide-react";
+import { useRef, useState } from "react";
 import BrandMark from "@/components/common/BrandMark";
 
 const navItems = [
@@ -17,6 +20,16 @@ const navItems = [
     id: "overview",
     label: "Vista general",
     icon: LayoutDashboard,
+  },
+  {
+    id: "clients",
+    label: "Clientes",
+    icon: UsersRound,
+  },
+  {
+    id: "orders",
+    label: "Pedidos",
+    icon: ClipboardList,
   },
   {
     id: "production",
@@ -35,13 +48,13 @@ const navItems = [
     icon: Truck,
   },
   {
-    id: "orders",
-    label: "Pedidos",
-    icon: ClipboardList,
+    id: "history",
+    label: "Historial de Entregas Finalizadas",
+    icon: History,
   },
   {
     id: "reports",
-    label: "Reportes",
+    label: "Reporte",
     icon: BarChart3,
   },
 ];
@@ -55,6 +68,29 @@ export default function Sidebar({
   setLogged,
   fakeAction,
 }) {
+  const [orderedItems, setOrderedItems] = useState(navItems);
+  const [reorderEnabled, setReorderEnabled] = useState(false);
+  const [draggedId, setDraggedId] = useState(null);
+  const holdTimer = useRef(null);
+
+  const startHold = () => {
+    holdTimer.current = window.setTimeout(() => setReorderEnabled(true), 20000);
+  };
+  const cancelHold = () => {
+    if (holdTimer.current) window.clearTimeout(holdTimer.current);
+  };
+  const moveItem = (targetId) => {
+    if (!draggedId || draggedId === targetId) return;
+    setOrderedItems((items) => {
+      const next = [...items];
+      const from = next.findIndex((item) => item.id === draggedId);
+      const to = next.findIndex((item) => item.id === targetId);
+      const [item] = next.splice(from, 1);
+      next.splice(to, 0, item);
+      return next;
+    });
+  };
+
   return (
     <>
       {mobileOpen && (
@@ -82,7 +118,7 @@ export default function Sidebar({
         </div>
 
         <nav className="flex flex-col gap-1 pt-2">
-          {navItems.map((item) => {
+          {orderedItems.map((item) => {
             const Icon = item.icon;
             const isActive = active === item.id;
 
@@ -91,6 +127,15 @@ export default function Sidebar({
                 key={item.id}
                 type="button"
                 onClick={() => navigate(item.id)}
+                draggable={reorderEnabled}
+                onPointerDown={startHold}
+                onPointerUp={cancelHold}
+                onPointerLeave={cancelHold}
+                onDragStart={() => setDraggedId(item.id)}
+                onDragOver={(event) => { if (reorderEnabled) event.preventDefault(); }}
+                onDrop={() => moveItem(item.id)}
+                onDragEnd={() => setDraggedId(null)}
+                title={reorderEnabled ? "Arrastre para cambiar de lugar" : undefined}
                 className={`flex w-full items-center gap-2.75 rounded-[14px] border-0 px-3 py-2.75 text-left text-[14px] transition-all duration-150 cursor-pointer ${isActive
                   ? "bg-brand-soft font-semibold text-brand"
                   : "bg-transparent text-ink-soft hover:bg-canvas hover:text-ink"
